@@ -1,0 +1,29 @@
+{
+  "name": "jira-server",
+  "version": "0.1.0",
+  "description": "tool for interacting with Jira project",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "jira-server": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "0.6.0",
+    "dotenv": "^16.5.0",
+    "jira-client": "^8.2.2"
+  },
+  "devDependencies": {
+    "@types/jira-client": "^7.1.9",
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  }
+}

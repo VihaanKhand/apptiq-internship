@@ -1,0 +1,26 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "bs4==0.0.2",
+    "faker==30.8.1",
+    "fastapi[standard]==0.115.11",
+    "langchain==0.3.6",
+    "langchain-community==0.3.4",
+    "langchain-mcp-adapters>=0.0.9",
+    "langchain-openai==0.2.3",
+    "langfuse==2.60.2",
+    "langgraph==0.2.39",
+    "langgraph-checkpoint-postgres>=2.0.21",
+    "mcp[cli]>=1.6.0",
+    "prometheus-client==0.21.1",
+    "psycopg[binary]==3.2.3",
+    "pydantic-settings==2.6.0",
+    "pypdf==5.1.0",
+    "rich==13.9.4",
+    "sqlmodel>=0.0.24",
+    "sse-starlette==2.1.3",
+]
