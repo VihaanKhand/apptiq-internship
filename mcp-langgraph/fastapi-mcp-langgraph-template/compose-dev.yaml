@@ -1,17 +1,19 @@
 services:
-  api:
-    image: api:prod
-    build:
-      dockerfile: ./backend/api/Dockerfile
-    entrypoint: uv run fastapi run api/main.py --root-path=/api --reload
-    env_file:
-      - ./envs/backend.env
-    ports:
-      - 8080:8080
-    volumes:
-      - ./backend/api:/app/api
-      - ./backend/api/.vscode/:/app/.vscode
-      - ./backend/shared_mcp:/app/shared_mcp
+  
+  #api:
+    #image: api:prod
+    #build:
+     # dockerfile: ./backend/api/Dockerfile
+    #entrypoint: uv run fastapi run api/main.py --root-path=/api --reload
+    #env_file:
+    #  - backend.env
+    #ports:
+    #  - 8080:8080
+    #volumes:
+    #  - ./backend/api:/app/api
+    #  - ./backend/api/.vscode/:/app/.vscode
+  #    - ./backend/shared_mcp:/app/shared_mcp
+  
 
   mcp:
     image: mcp:prod
@@ -68,13 +70,14 @@ services:
   kubernetes:
     image: k8s-mcp-server
     build:
-      context: ./mcp-k8s/kubectl-mcp-server
-      dockerfile: Dockerfile
+      context: ./mcp-k8s/k8s-mcp-server
+      dockerfile: deploy/docker/Dockerfile
     environment:
       - K8S_MCP_SECURITY_MODE=permissive
+      - K8S_MCP_TRANSPORT=sse
     volumes:
       - ~/.kube:/home/appuser/.kube:ro
     ports:
-      - 8081:8080
+      - 8081:8000
 
 
