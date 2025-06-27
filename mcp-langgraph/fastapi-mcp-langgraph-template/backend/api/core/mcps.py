@@ -21,7 +21,7 @@ async def mcp_sse_client(
         ClientSession: An initialized MCP client session.
     """
     async with sse_client(
-        f"http://{mcp_host}:{settings.mcp_server_port}/sse"
+        f"http://{mcp_host}/sse"
     ) as (
         read_stream,
         write_stream,

@@ -3,6 +3,8 @@ export enum AgentId {
   CHATBOT = 'chatbot',
   MATH_AGENT = 'math_agent',
   MCP_AGENT = 'mcp_agent',
+  MCP_AWS = 'mcp_aws',
+  MCP_K8S = 'mcp_k8s',
 }
 
 export interface Agent {
@@ -12,6 +14,7 @@ export interface Agent {
   icon: string;
   capabilities: string[];
   showActivityTimeline: boolean;
+  baseURL?: string;
 }
 
 export const AVAILABLE_AGENTS: Agent[] = [
@@ -50,6 +53,22 @@ export const AVAILABLE_AGENTS: Agent[] = [
     icon: 'wrench',
     capabilities: ['Model context protocol (MCP)'],
     showActivityTimeline: false,
+  },
+  {
+    id: AgentId.MCP_AWS,
+    name: 'AWS MCP Agent',
+    description: 'Hosted on AWS',
+    icon: 'cloud',
+    capabilities: ['AWS CLI tools'],
+    showActivityTimeline: true,
+  },
+  {
+    id: AgentId.MCP_K8S,
+    name: 'K8s MCP Agent',
+    description: 'Hosted in Kubernetes',
+    icon: 'kubernetes',
+    capabilities: ['K8s tools'],
+    showActivityTimeline: true,
   },
 ];
 

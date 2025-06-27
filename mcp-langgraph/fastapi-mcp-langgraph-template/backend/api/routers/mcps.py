@@ -5,9 +5,9 @@ router = APIRouter()
 
 def resolve_host(agent_id: str) -> str:
     if "aws" in agent_id:
-        return "aws-mcp"  # or public DNS/IP if deployed
+        return "aws-mcp:5010"  # or public DNS/IP if deployed
     elif "k8s" in agent_id or "kubernetes" in agent_id:
-        return "k8s-mcp"
+        return "k8s-mcp:8000"
     raise HTTPException(status_code=400, detail="Unknown agent_id")
 
 @router.post("/tools")

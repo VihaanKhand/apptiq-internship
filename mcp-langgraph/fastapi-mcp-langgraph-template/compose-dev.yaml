@@ -1,18 +1,21 @@
 services:
   
-  #api:
-    #image: api:prod
-    #build:
-     # dockerfile: ./backend/api/Dockerfile
-    #entrypoint: uv run fastapi run api/main.py --root-path=/api --reload
-    #env_file:
-    #  - backend.env
-    #ports:
-    #  - 8080:8080
-    #volumes:
-    #  - ./backend/api:/app/api
-    #  - ./backend/api/.vscode/:/app/.vscode
-  #    - ./backend/shared_mcp:/app/shared_mcp
+  api:
+    image: api:prod
+    build:
+      dockerfile: ./backend/api/Dockerfile
+    entrypoint: uv run fastapi run api/main.py --root-path=/api --reload
+    env_file:
+      - backend.env
+    ports:
+      - 8080:8080
+    volumes:
+      - ./backend/api:/app/api
+      - ./backend/api/.vscode/:/app/.vscode
+      - ./backend/shared_mcp:/app/shared_mcp
+    depends_on:
+      - aws-mcp
+      - k8s-mcp
   
 
   mcp:
@@ -51,7 +54,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
   
-  aws:
+  aws-mcp:
     image: aws-mcp-server
     build:
       context: ./mcp-aws/AWS_CloudGuardMCP
@@ -67,7 +70,7 @@ services:
     entrypoint: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5010"]
 
   
-  kubernetes:
+  k8s-mcp:
     image: k8s-mcp-server
     build:
       context: ./mcp-k8s/k8s-mcp-server
