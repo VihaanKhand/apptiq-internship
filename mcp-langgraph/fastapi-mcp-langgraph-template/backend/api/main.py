@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from routers import checkpoints, llms, mcps, mcp_router
+from api.routers import checkpoints, llms, mcps
 
 
 app = FastAPI(swagger_ui_parameters={"tryItOutEnabled": True})

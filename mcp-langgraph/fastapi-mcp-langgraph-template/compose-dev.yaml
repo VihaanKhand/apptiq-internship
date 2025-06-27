@@ -3,10 +3,11 @@ services:
   api:
     image: api:prod
     build:
-      dockerfile: ./backend/api/Dockerfile
-    entrypoint: uv run fastapi run api/main.py --root-path=/api --reload
+      context: .
+      dockerfile: backend/api/Dockerfile
+    entrypoint: uv run fastapi run api/main.py --host 0.0.0.0 --port 8080 --root-path=/api --reload
     env_file:
-      - backend.env
+      - ./envs/backend.env
     ports:
       - 8080:8080
     volumes:
@@ -82,5 +83,15 @@ services:
       - ~/.kube:/home/appuser/.kube:ro
     ports:
       - 8081:8000
+  
+  frontend:
+    image: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:80
+    depends_on:
+      - api
 
 
