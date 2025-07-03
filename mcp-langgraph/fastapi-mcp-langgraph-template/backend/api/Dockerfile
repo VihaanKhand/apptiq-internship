@@ -4,8 +4,8 @@ WORKDIR /app
 
 # Install system deps and uv
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl build-essential && \
-    pip install uv && \
+    apt-get install -y curl build-essential && \
+    pip install uvicorn && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy lockfiles and install Python deps
@@ -19,4 +19,4 @@ COPY ./backend/shared_mcp /app/shared_mcp
 
 # Set env + entrypoint
 ENV PYTHONPATH /app:$PYTHONPATH
-ENTRYPOINT ["uv", "run", "fastapi", "run", "api/main.py", "--root-path=/api"]
+ENTRYPOINT ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080", "--root-path=/api", "--reload"]

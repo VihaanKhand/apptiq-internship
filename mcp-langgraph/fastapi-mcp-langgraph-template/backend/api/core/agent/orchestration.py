@@ -60,7 +60,7 @@ def make_agent_for_model(
 
     # 2️⃣ Setup tracer and callback manager (LangSmith)
     tracer = LangChainTracer(project_name="mcp-agent-traces")
-    callback_manager = CallbackManager(callbacks=[tracer])
+    callback_manager = CallbackManager(handlers=[tracer])
 
     # 3️⃣ Initialize an agent with tool support and tracing
     agent = initialize_agent(

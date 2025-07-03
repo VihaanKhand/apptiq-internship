@@ -40,3 +40,11 @@ async def chat_endpoint(request: ChatRequest) -> Any:
     except Exception as e:
         print("🚨 ERROR in /chat/:", e)
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/health")
+async def health_check():
+    """
+    Simple health check endpoint so you can smoke-test the service
+    via GET /api/health when using --root-path=/api
+    """
+    return {"status": "ok"}

@@ -11,5 +11,6 @@ dependencies = [
     "mcp>=1.4.1",
     "zmq>=0.0.0",
     "fastapi",
-    "uvicorn[standard]"
+    "uvicorn[standard]",
+    "fastapi-jsonrpc",
 ]
