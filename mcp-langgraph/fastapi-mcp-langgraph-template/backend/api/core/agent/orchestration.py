@@ -1,128 +1,73 @@
-import functools, os
-from typing import List, Any, Optional
+import os
+from typing import Any, List, Dict
 
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables.base import RunnableSequence
 from langchain_core.tools import StructuredTool
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from langgraph.graph import MessagesState, StateGraph
-from langgraph.graph.state import CompiledStateGraph
-from langgraph.prebuilt import ToolNode, tools_condition
-
-from api.core.agent.tools import get_tools       # ← one‐way import
-from api.core.agent.prompts import SYSTEM_PROMPT
-from api.core.dependencies import LangfuseHandlerDep
-
-
-class State(MessagesState):
-    next: str
-
-
-def agent_factory(
-    llm: RunnableSequence,
-    tools: List[StructuredTool],
-    system_prompt: str,
-) -> RunnableSequence:
-    """
-    Build a prompt-to-LLM (and optional tools) pipeline.
-    """
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
-    if tools:
-        return prompt | llm.bind_tools(tools)
-    return prompt | llm
-
-
-def agent_node_factory(
-    state: State,
-    agent: RunnableSequence,
-) -> State:
-    result = agent.invoke(state)
-    return dict(messages=[result])
-
-
-def graph_factory(
-    agent_node: functools.partial,
-    tools: List[StructuredTool],
-    checkpointer: Optional[AsyncPostgresSaver] = None,
-    name: str = "agent_node",
-) -> CompiledStateGraph:
-    """
-    Create and compile a LangGraph state graph with a single agent node
-    and a tools node, with conditional routing.
-    """
-    builder = StateGraph(State)
-    builder.add_node(name, agent_node)
-    builder.add_node("tools", ToolNode(tools))
-    builder.add_conditional_edges(name, tools_condition)
-    builder.add_edge("tools", name)
-    builder.set_entry_point(name)
-    return builder.compile(checkpointer=checkpointer)
-
-
-def get_graph(
-    llm: RunnableSequence,
-    tools: List[StructuredTool] = [],
-    system_prompt: str = SYSTEM_PROMPT,
-    name: str = "agent_node",
-    checkpointer: Optional[AsyncPostgresSaver] = None,
-) -> CompiledStateGraph:
-    """
-    Constructs and compiles the state graph with given llm and tools.
-    """
-    agent = agent_factory(llm, tools, system_prompt)
-    worker = functools.partial(agent_node_factory, agent=agent)
-    return graph_factory(worker, tools, checkpointer, name)
+from langchain.agents import initialize_agent, AgentType
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.tracers import LangChainTracer
 
 
 def make_agent_for_model(
     model_name: str,
-) -> RunnableSequence:
+    tools: List[StructuredTool],
+) -> Any:
     """
-    Instantiate the appropriate LLM client (OpenAI or Gemini),
-    load all MCP tools, and return the compiled graph as an agent.
+    Build a LangChain agent for the given model (OpenAI or Gemini),
+    attach MCP tools, and enable LangSmith tracing per the official docs.
     """
-    # Select LLM based on model_name
-    if model_name.startswith("gpt-4"):
-        llm = ChatOpenAI(model_name="gpt-4", temperature=0)
-    elif model_name.startswith("gpt-3.5"):
-        llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-    elif model_name.startswith("gemini"):
+    # 1️⃣ Choose the LLM implementation
+    if model_name.startswith("gpt-"):
+        llm = ChatOpenAI(
+            model_name=model_name,
+            temperature=0,
+            openai_api_key=os.getenv("OPENAI_API_KEY"),
+        )
+    elif model_name.startswith("gemini-"):
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise RuntimeError("GOOGLE_API_KEY environment variable is not set.")
         try:
             import google.generativeai as genai
-            genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-
-            class GeminiChat:
-                def __init__(self, model: str, temperature: float):
-                    self.model = model
-                    self.temperature = temperature
-
-                async def __call__(self, messages: List[dict]):
-                    resp = genai.chat.create(
-                        model=self.model,
-                        temperature=self.temperature,
-                        messages=[{"author": m["role"], "content": m["content"]} for m in messages],
-                    )
-                    return {"content": resp.last}
-
-            llm = GeminiChat(model=model_name, temperature=0)
         except ImportError:
-            raise RuntimeError("google-generative-ai SDK is not installed")
+            raise RuntimeError("Please install the 'google-generativeai' SDK to use Gemini models.")
+        genai.configure(api_key=api_key)
+
+        class GeminiChatAdapter:
+            """
+            Adapter for Google Generative AI chat completion per SDK docs.
+            """
+            def __init__(self, model: str):
+                self.model = model
+                self.genai = genai
+
+            async def __call__(self, prompt: str) -> str:
+                resp = self.genai.chat.completions.create(
+                    model=self.model,
+                    messages=[{"author": "user", "content": prompt}],
+                )
+                if hasattr(resp, "last"):
+                    return resp.last
+                data = getattr(resp, "candidates", None)
+                if data:
+                    first = data[0]
+                    return getattr(first, "text", None) or first.get("text", "")
+                return getattr(resp, "text", None) or resp.get("text", "")
+
+        llm = GeminiChatAdapter(model=model_name)
     else:
-        llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+        raise ValueError(f"Unknown model: {model_name}")
 
-    tools = get_tools()
-    return get_graph(llm, tools)
+    # 2️⃣ Setup tracer and callback manager (LangSmith)
+    tracer = LangChainTracer(project_name="mcp-agent-traces")
+    callback_manager = CallbackManager(callbacks=[tracer])
 
-
-def get_config(langfuse_handler: LangfuseHandlerDep) -> dict[str, Any]:
-    """
-    Langfuse configuration for logging and callbacks.
-    """
-    return {
-        "configurable": {"thread_id": "1"},
-        "callbacks": [langfuse_handler],
-    }
+    # 3️⃣ Initialize an agent with tool support and tracing
+    agent = initialize_agent(
+        tools=tools,
+        llm=llm,
+        agent=AgentType.OPENAI_FUNCTIONS,
+        callback_manager=callback_manager,
+        verbose=True,
+    )
+    return agent
