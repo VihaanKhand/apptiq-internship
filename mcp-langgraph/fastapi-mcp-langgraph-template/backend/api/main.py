@@ -1,20 +1,21 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from langchain_core.messages import HumanMessage
-from api.core.agent.orchestration import get_graph
-from api.core.agent.tools import get_tools  # your tools loader
-from langchain_openai import ChatOpenAI
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import List, Dict, Any
+
+from api.core.agent.orchestration import make_agent_for_model
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-@app.post("/api/messages")
-async def run_graph(request: Request):
-    body = await request.json()
-    user_message = body.get("message", "")
-    llm = ChatOpenAI(model="gpt-4o")  # or Gemini when hooked
-    tools = get_tools()  # adapt if needed
-    graph = get_graph(llm=llm, tools=tools)
+class ChatRequest(BaseModel):
+    messages: List[Dict[str, Any]]  # expects list of {role: str, content: str}
+    model: str  # model identifier, e.g., 'gpt-4', 'gemini-pro'
 
-    result = graph.invoke({"messages": [HumanMessage(content=user_message)], "next": "agent_node"})
-    return {"response": result["messages"][-1].content}
+@app.post("/api/chat/")
+async def chat_endpoint(request: ChatRequest) -> Any:
+    """
+    Route user messages and model selection through the LangGraph agent.
+    """
+    agent = make_agent_for_model(request.model)
+    # Run the graph with the incoming messages
+    result = await agent.ainvoke({"messages": request.messages})
+    return result

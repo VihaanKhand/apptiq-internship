@@ -56,9 +56,7 @@ export default function App() {
     max_research_loops: number;
     reasoning_model: string;
   }>({
-    apiUrl: import.meta.env.DEV
-      ? 'http://localhost:8080/api'
-      : 'http://localhost:8080/api',
+    apiUrl: '/api',
     assistantId: selectedAgentId,
     messagesKey: 'messages',
     onFinish: (event: unknown) => {
