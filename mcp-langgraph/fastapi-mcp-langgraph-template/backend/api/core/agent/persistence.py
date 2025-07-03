@@ -13,7 +13,7 @@ from api.core.logs import uvicorn
 @asynccontextmanager
 async def checkpointer_context(
     conn_str: str,
-) -> AsyncGenerator[AsyncPostgresSaver]:
+) -> AsyncGenerator[AsyncPostgresSaver, None]:
     """
     Async context manager that sets up and yields a LangGraph checkpointer.
 

@@ -127,8 +127,7 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
 
 # Step 8: Install Azure CLI for AKS authentication
 ARG AZURE_CLI_VERSION=2.71.0
-RUN pip install --no-cache-dir azure-cli==${AZURE_CLI_VERSION} && \
-    az --version
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash && az --version
 
 # Set up application directory, user, and permissions
 RUN mkdir -p /app/logs && chmod 750 /app/logs \

@@ -3,14 +3,14 @@ name = "api"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11,<3.12"
 dependencies = [
     "bs4==0.0.2",
     "faker==30.8.1",
     "fastapi[standard]==0.115.11",
     "langchain==0.3.6",
     "langchain-community==0.3.4",
-    "langchain-mcp-adapters>=0.0.9",
+    "langchain-mcp-adapters==0.1.8",
     "langchain-openai==0.2.3",
     "langfuse==2.60.2",
     "langgraph==0.2.39",

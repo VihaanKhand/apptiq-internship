@@ -57,8 +57,8 @@ export default function App() {
     reasoning_model: string;
   }>({
     apiUrl: import.meta.env.DEV
-      ? 'http://localhost:2024'
-      : 'http://localhost:8123',
+      ? 'http://localhost:8080/api'
+      : 'http://localhost:8080/api',
     assistantId: selectedAgentId,
     messagesKey: 'messages',
     onFinish: (event: unknown) => {

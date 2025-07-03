@@ -37,7 +37,7 @@ EngineDep = Annotated[AsyncEngine, Depends(get_engine)]
 
 
 @asynccontextmanager
-async def setup_graph() -> AsyncGenerator[Resource]:
+async def setup_graph() -> AsyncGenerator[Resource, None]:
     async with checkpointer_context(
         settings.checkpoint_conn_str
     ) as checkpointer:

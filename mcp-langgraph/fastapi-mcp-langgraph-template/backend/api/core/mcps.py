@@ -10,7 +10,7 @@ from api.core.config import settings
 @asynccontextmanager
 async def mcp_sse_client(
     mcp_host: str = "mcp",
-) -> AsyncGenerator[ClientSession]:
+) -> AsyncGenerator[ClientSession, None]:
     """
     Creates and initializes an MCP client session over SSE.
 

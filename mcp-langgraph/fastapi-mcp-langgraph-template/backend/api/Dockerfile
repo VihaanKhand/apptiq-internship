@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -9,8 +9,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy lockfiles and install Python deps
-COPY ./backend/api/uv.lock ./backend/api/pyproject.toml ./
-RUN uv sync --frozen && rm ./uv.lock ./pyproject.toml
+COPY ./backend/api/pyproject.toml ./
+RUN pip install --no-cache-dir . && rm pyproject.toml
 
 # Copy everything else
 COPY ./envs/backend.env /opt/.env

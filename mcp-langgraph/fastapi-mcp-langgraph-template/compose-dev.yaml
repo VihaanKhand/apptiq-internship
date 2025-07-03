@@ -19,19 +19,6 @@ services:
       - k8s-mcp
     networks:
       - mcp-net
-  
-
-  mcp:
-    image: mcp:prod
-    build:
-      dockerfile: ./backend/mcp/Dockerfile
-    environment:
-      - MCP_SERVER_PORT=${MCP_SERVER_PORT}
-    ports:
-      - ${MCP_SERVER_PORT}:${MCP_SERVER_PORT}
-    volumes:
-      - ./backend/mcp:/app/mcp
-      - ./backend/shared_mcp:/app/shared_mcp
 
   youtube:
     image: youtube-mcp-server
