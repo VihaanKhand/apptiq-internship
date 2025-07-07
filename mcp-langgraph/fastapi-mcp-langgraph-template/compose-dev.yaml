@@ -1,10 +1,14 @@
+version: "3.8"
+
 services:
   
   api:
     image: api:prod
+    container_name: api
     build:
       context: .
       dockerfile: backend/api/Dockerfile
+    working_dir: /app 
     entrypoint: uvicorn api.main:app --host 0.0.0.0 --port 8080 --root-path=/api --reload
     env_file:
       - ./envs/backend.env
@@ -13,7 +17,6 @@ services:
       - 8080:8080
     volumes:
       - ./backend/api:/app/api
-      - ./backend/api/.vscode/:/app/.vscode
       - ./backend/shared_mcp:/app/shared_mcp
     depends_on:
       - aws-mcp
@@ -47,6 +50,8 @@ services:
       - ./nginx:/etc/nginx/conf.d:ro
     networks:
       - mcp-net
+    depends_on:
+      - api
   
   aws-mcp:
     image: aws-mcp-server
@@ -61,7 +66,7 @@ services:
       - 5010:5010
     volumes:
       - ./mcp-aws/AWS_CloudGuardMCP:/app
-    entrypoint: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5010"]
+    entrypoint: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5010"] 
     networks:
       - mcp-net
 

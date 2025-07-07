@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /app/backend/api
 
 # Install system deps and uv
 RUN apt-get update && \
@@ -18,5 +18,5 @@ COPY ./backend/api /app/api
 COPY ./backend/shared_mcp /app/shared_mcp
 
 # Set env + entrypoint
-ENV PYTHONPATH /app:$PYTHONPATH
+ENV PYTHONPATH=/app/backend/api
 ENTRYPOINT ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080", "--root-path=/api", "--reload"]

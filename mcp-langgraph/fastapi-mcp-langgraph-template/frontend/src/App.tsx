@@ -55,8 +55,9 @@ export default function App() {
     initial_search_query_count: number;
     max_research_loops: number;
     reasoning_model: string;
+    model?: string;
   }>({
-    apiUrl: '/api',
+    apiUrl: '/chat',
     assistantId: selectedAgentId,
     messagesKey: 'messages',
     onFinish: (event: unknown) => {
@@ -243,6 +244,7 @@ export default function App() {
         // For chatbot, only send messages
         thread.submit({
           messages: newMessages,
+          model: model,
         });
       }
     },

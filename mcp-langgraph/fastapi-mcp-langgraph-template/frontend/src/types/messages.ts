@@ -26,3 +26,9 @@ export function findToolMessageForCall(
       (msg as ExtendedMessage).tool_call_id === toolCallId
   ) as ToolMessage | undefined;
 }
+
+export interface ChatMessage {
+  id: string;
+  type: 'human' | 'ai';
+  content: string;
+}
