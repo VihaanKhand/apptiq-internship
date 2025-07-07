@@ -57,7 +57,7 @@ export default function App() {
     reasoning_model: string;
     model?: string;
   }>({
-    apiUrl: '/chat',
+    apiUrl: 'http://localhost:8080/chat',
     assistantId: selectedAgentId,
     messagesKey: 'messages',
     onFinish: (event: unknown) => {
